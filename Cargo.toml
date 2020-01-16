@@ -9,6 +9,6 @@ edition = "2018"
 [dependencies]
 wasmtime = "0.9.0"
 
-[[bin]]
-name = "lembeh"
-path = "main.rs"
+# [[bin]]
+# name = "lembeh"
+# path = "main.rs"

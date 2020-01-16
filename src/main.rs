@@ -5,9 +5,10 @@ use std::net::TcpListener;
 use std::net::TcpStream;
 use wasmtime::*;
 
-fn main() {
-    /******/
+mod one;
+mod two;
 
+fn main() {
     let listener = TcpListener::bind("127.0.0.1:7878").unwrap();
 
     for stream in listener.incoming() {
@@ -27,15 +28,22 @@ fn handle_connection(mut stream: TcpStream) {
     let store = Store::default();
     let wasm = read("hello.wasm").expect("wasm file");
     let module = Module::new(&store, &wasm).expect("wasm module");
-    let instance = Instance::new(&store, &module, &[]).expect("wasm instance");
 
+    /***********************/
+    let xxx = 123i32;
+    let times_two_function = one::init(&store);
+    let times_three_function = two::init(&store);
+    /***********************/
+
+    let instance =
+        Instance::new(&store, &module, &[times_two_function.into(), times_three_function.into()]).expect("wasm instance");
     let answer = instance
         .find_export_by_name("answer")
         .expect("answer")
         .func()
         .expect("function");
-    let result = answer.borrow().call(&[]).expect("success");
-    println!("Answer: {:?}", result[0].i32());
+    let result = answer.borrow().call(&[xxx.into()]).expect("success");
+    // println!("Answer: {:?}", result[0].i32());
 
     let contents = fs::read_to_string("hello.html").unwrap();
     let response = format!("HTTP/1.1 200 OK\n\n{} ---> {:?}", contents, result[0].i32());
